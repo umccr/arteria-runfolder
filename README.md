@@ -9,15 +9,17 @@ which pops up once the sequencing is finished.
 
 Currently supported states are:
 
-    NONE    -> No RTAComplete.txt file available
-    READY   -> Has found and RTAComplete.txt file
-    STARTED -> Some type of processing is going on of this runfolder
-    DONE    -> Processing has finished
-    ERROR   -> Some problem has been detected
+    none      -> No RTAComplete.txt file available
+    pending   -> An action is pending
+    ready     -> Has found and RTAComplete.txt file
+    started   -> Some type of processing is going on of this runfolder
+    done      -> Processing has finished
+    error     -> Some problem has been detected
+    cancelled -> The process has been cancelled
 
 All states can be set via posting to the API. E.g:
 
-    curl -X POST --data '{"state": "STARTED"}' http://localhost:9999/api/1.0/runfolders/</path/to/my_runfolder>
+    curl -X POST --data '{"state": "started"}' http://localhost:9999/api/1.0/runfolders/path/</path/to/my_runfolder>
 
 This means that the client (e.g. a workflow) is responsible for updating the state, and determining how to handle it.
 

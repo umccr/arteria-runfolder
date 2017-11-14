@@ -131,12 +131,20 @@ class RunfolderService:
         info = RunfolderInfo(self._host(), path, self.get_runfolder_state(path))
         return info
 
+    def _get_runfolder_state_path(self, runfolder):
+        runfolder_state_path = None
+        state_base_path = self._configuration_svc["state_base_path"]
+        if not state_base_path or state_base_path == "":
+            state_base_path = "/"
+
+        return os.path.join(state_base_path, runfolder.lstrip("/"))
+
     def _get_runfolder_state_from_state_file(self, runfolder):
         """
         Reads the state in the state file at .arteria/state, returns
         State.NONE if nothing is available
         """
-        state_file = os.path.join(runfolder, ".arteria", "state")
+        state_file = os.path.join(self._get_runfolder_state_path(runfolder), ".arteria", "state")
         if self._file_exists(state_file):
             with open(state_file, 'r') as f:
                 state = f.read()
@@ -153,33 +161,27 @@ class RunfolderService:
         If the file .arteria/state exists, it will determine the state. If it doesn't
         exist, the existence of the marker file RTAComplete.txt determines the state.
         """
-        completed_marker_file = self._configuration_svc["completed_marker_file"]
         state = self._get_runfolder_state_from_state_file(runfolder)
         if state == State.NONE:
-            if completed_marker_file is None:
-                raise ConfigurationError("completed_marker_file must be set")
-            completed_marker = os.path.join(runfolder, completed_marker_file)
+            completed_marker = os.path.join(runfolder, "RTAComplete.txt")
             ready = self._file_exists(completed_marker)
             if ready:
                 state = State.READY
         return state
 
-    @staticmethod
-    def set_runfolder_state(runfolder, state):
+    def set_runfolder_state(self, runfolder, state):
         """Sets the state of a runfolder"""
         validate_state(state)
-        arteria_dir = os.path.join(runfolder, ".arteria")
-        state_file = os.path.join(arteria_dir, "state")
+        arteria_dir = os.path.join(self._get_runfolder_state_path(runfolder), ".arteria")
         if not os.path.exists(arteria_dir):
+            print("Creating dirs")
             os.makedirs(arteria_dir)
-        with open(state_file, 'w') as f:
+        with open(os.path.join(arteria_dir, "state"), 'w') as f:
             f.write(state)
 
     def is_runfolder_ready(self, directory):
         """Returns True if the runfolder is ready"""
-        state = self.get_runfolder_state(directory)
-        from arteria.testhelpers import TestFunctionDelta, BaseRestTest
-        return state == State.READY
+        return self.get_runfolder_state(directory) == State.READY
 
     def _monitored_directories(self):
         """Lists all directories monitored for new runfolders"""
@@ -261,4 +263,3 @@ class InvalidRunfolderState(Exception):
 
 class ConfigurationError(Exception):
     pass
-
