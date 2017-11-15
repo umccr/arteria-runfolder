@@ -25,7 +25,8 @@ class RunfolderServiceTestCase(unittest.TestCase):
                 "/data/testarteria1/mon1",
                 "/data/testarteria1/mon2"
             ],
-            "state_base_path": "/data/state"
+            "state_base_path": "/data/state",
+            "completed_marker_file": "RTAComplete.txt"
         }
         runfolder_svc = RunfolderService(configuration_svc, logger)
 
@@ -49,7 +50,8 @@ class RunfolderServiceTestCase(unittest.TestCase):
             "monitored_directories": [
                 "/data/testarteria1/mon1"
             ],
-            "state_base_path": "/data/state"
+            "state_base_path": "/data/state",
+            "completed_marker_file": "RTAComplete.txt"
         }
 
         # Since keys in configuration_svc can be directly indexed, we can mock it with a dict:
